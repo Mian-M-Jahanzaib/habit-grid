@@ -16,6 +16,7 @@ const Calendar = ({ logs, habits, dayNotes, onSaveNote }) => {
   const days = Array(firstDay).fill(null).concat([...Array(daysInMonth).keys()].map(i => i + 1));
   const selectedDateStr = selectedDate.toLocaleDateString('en-CA');
 
+  // Load Note
   useEffect(() => {
     const note = dayNotes.find(n => n.note_date === selectedDateStr);
     setNoteText(note ? note.content : '');
@@ -29,23 +30,21 @@ const Calendar = ({ logs, habits, dayNotes, onSaveNote }) => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + offset, 1));
   };
 
-  // --- FILTER HABITS (Updated for End Date) ---
+  // --- FILTER SIDEBAR HABITS ---
   const dailyHabits = habits.filter(habit => {
-      // 1. Check Start Date (Habit must exist by this date)
       const habitStartDate = new Date(habit.created_at);
       habitStartDate.setHours(0, 0, 0, 0);
       
       const currentSelected = new Date(selectedDate);
       currentSelected.setHours(0, 0, 0, 0);
 
+      // Must exist by this date
       if (currentSelected < habitStartDate) return false;
 
-      // 2. Check End Date (Habit must not be expired)
+      // Must not be expired
       if (habit.end_date) {
           const habitEndDate = new Date(habit.end_date);
           habitEndDate.setHours(0, 0, 0, 0);
-          
-          // If selected date is AFTER the end date, hide it
           if (currentSelected > habitEndDate) return false;
       }
 
@@ -58,11 +57,10 @@ const Calendar = ({ logs, habits, dayNotes, onSaveNote }) => {
   const completedCount = dailyHabits.filter(h => h.isCompleted).length;
   const totalCount = dailyHabits.length;
   
-  // --- INTELLIGENT STATUS LOGIC ---
+  // --- STATUS TEXT LOGIC ---
   let dayStatus = "No Activity";
   let statusColor = "text-gray-400";
 
-  // Normalize dates for comparison
   const today = new Date();
   today.setHours(0,0,0,0);
   const checkDate = new Date(selectedDate);
@@ -70,14 +68,11 @@ const Calendar = ({ logs, habits, dayNotes, onSaveNote }) => {
 
   if (totalCount > 0) {
       if (checkDate > today) {
-          // FUTURE: Show Countdown
           const diffTime = Math.abs(checkDate - today);
           const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-          
           dayStatus = diffDays === 1 ? "Tomorrow" : `In ${diffDays} Days`;
           statusColor = "text-blue-500"; 
       } else if (checkDate.getTime() === today.getTime()) {
-          // TODAY
           if (completedCount === totalCount) {
              dayStatus = "All Done!";
              statusColor = "text-green-500";
@@ -89,7 +84,6 @@ const Calendar = ({ logs, habits, dayNotes, onSaveNote }) => {
              statusColor = "text-blue-500";
           }
       } else {
-          // PAST
           if (completedCount === totalCount) {
               dayStatus = "Perfect Day";
               statusColor = "text-green-500";
@@ -104,10 +98,8 @@ const Calendar = ({ logs, habits, dayNotes, onSaveNote }) => {
               statusColor = "text-red-400";
           }
       }
-  } else {
-      // If no tasks, verify if it's because they expired or haven't started
-      // We can keep "No Activity" or change it to "Free Day"
-      if (checkDate > today) dayStatus = "Free Day";
+  } else if (checkDate > today) {
+      dayStatus = "Free Day";
   }
 
   return (
@@ -152,18 +144,34 @@ const Calendar = ({ logs, habits, dayNotes, onSaveNote }) => {
                 const cellDateStr = cellDate.toLocaleDateString('en-CA');
                 const isSelected = selectedDateStr === cellDateStr;
                 
-                const dayLogs = logs.filter(l => {
-                    const parentHabit = habits.find(h => h.id === l.habit_id);
-                    if (!parentHabit) return false;
+                // Normalizing cellDate for comparison
+                const cDate = new Date(cellDate);
+                cDate.setHours(0,0,0,0);
+                const todayMidnight = new Date();
+                todayMidnight.setHours(0,0,0,0);
+
+                // 1. Find ALL Active Habits for this specific day
+                const activeHabitsForDay = habits.filter(h => {
+                    const hStart = new Date(h.created_at);
+                    hStart.setHours(0,0,0,0);
                     
-                    const hDate = new Date(parentHabit.created_at);
-                    hDate.setHours(0,0,0,0);
-                    const cDate = new Date(cellDate);
-                    cDate.setHours(0,0,0,0);
+                    if (cDate < hStart) return false; // Too early
                     
-                    // Filter Grid Dots too? (Optional, but currently checks if completed)
-                    // If it was completed, we show it even if habit is now "expired" (History is history)
-                    return l.log_date === cellDateStr && l.status === 'completed' && cDate >= hDate;
+                    if (h.end_date) {
+                        const hEnd = new Date(h.end_date);
+                        hEnd.setHours(0,0,0,0);
+                        if (cDate > hEnd) return false; // Too late (expired)
+                    }
+                    return true;
+                });
+
+                // 2. Map them to status dots
+                const dots = activeHabitsForDay.map(habit => {
+                    const isCompleted = logs.some(l => l.habit_id === habit.id && l.log_date === cellDateStr && l.status === 'completed');
+                    
+                    if (isCompleted) return 'bg-green-500'; // Done
+                    if (cDate < todayMidnight) return 'bg-red-500'; // Missed (Past)
+                    return 'bg-gray-300 dark:bg-gray-600'; // Upcoming (Future/Today)
                 });
                 
                 const hasNote = dayNotes.some(n => n.note_date === cellDateStr && n.content.trim().length > 0);
@@ -183,9 +191,10 @@ const Calendar = ({ logs, habits, dayNotes, onSaveNote }) => {
                         {hasNote && <span className="material-symbols-outlined text-[10px] text-gray-400">description</span>}
                     </div>
                     
-                    <div className="flex flex-wrap gap-1 mt-2">
-                        {dayLogs.map((_, i) => (
-                            <div key={i} className="h-2 w-2 rounded-full bg-green-500"></div>
+                    {/* Render Dots for EVERY active habit */}
+                    <div className="flex flex-wrap gap-1 mt-2 content-start">
+                        {dots.map((colorClass, i) => (
+                            <div key={i} className={`h-2 w-2 rounded-full ${colorClass}`}></div>
                         ))}
                     </div>
                   </div>
