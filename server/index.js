@@ -308,24 +308,30 @@ app.post('/api/import', async (req, res) => {
     }
 });
 
-
-// 6. DANGER ZONE (Reset Data)
+// 6. DANGER ZONE (Factory Reset)
 app.delete('/api/reset-data', async (req, res) => {
     try {
+        // 1. Delete all user content
         await db.runQuery('DELETE FROM daily_logs');
         await db.runQuery('DELETE FROM habits');
         await db.runQuery('DELETE FROM day_notes');
         
-        // Reset ID counters
-        await db.runQuery('DELETE FROM sqlite_sequence WHERE name="daily_logs"');
-        await db.runQuery('DELETE FROM sqlite_sequence WHERE name="habits"');
+        // 2. Factory Reset the Profile 
+        // (Delete current profile and immediately restore the "Fresh Install" default)
+        await db.runQuery('DELETE FROM user_profile');
+        await db.runQuery(`
+            INSERT INTO user_profile (id, first_name, last_name, email, bio, avatar_url) 
+            VALUES (1, 'Alex', 'Morgan', 'alex@habitgrid.com', 'Building consistent habits one day at a time.', '')
+        `);
         
-        res.json({ message: "All data reset" });
+        // 3. Reset ID counters for all tables
+        await db.runQuery('DELETE FROM sqlite_sequence');
+        
+        res.json({ message: "All data reset to factory defaults" });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
-
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
