@@ -12,7 +12,14 @@ function App() {
   const [logs, setLogs] = useState([]);
   const [dayNotes, setDayNotes] = useState([]);
   
-  // NEW: Lifted Profile State
+  // --- 1. THEME STATE (Load from storage or default to 'light') ---
+  const [theme, setTheme] = useState(() => {
+      if (typeof window !== 'undefined') {
+          return localStorage.getItem('theme') || 'light';
+      }
+      return 'light';
+  });
+
   const [userProfile, setUserProfile] = useState({
       first_name: 'Alex',
       last_name: 'Morgan',
@@ -27,6 +34,22 @@ function App() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [habitToEdit, setHabitToEdit] = useState(null);
 
+  // --- 2. THEME EFFECT (Apply class to HTML tag) ---
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (theme === 'dark') {
+        root.classList.add('dark');
+    } else {
+        root.classList.remove('dark');
+    }
+    // Save to local storage
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+      setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -37,7 +60,7 @@ function App() {
         fetch('http://localhost:5000/api/habits'),
         fetch('http://localhost:5000/api/logs'),
         fetch('http://localhost:5000/api/notes'),
-        fetch('http://localhost:5000/api/profile') // Fetch profile here
+        fetch('http://localhost:5000/api/profile')
       ]);
       
       const habitsData = await habitsRes.json();
@@ -57,13 +80,14 @@ function App() {
     }
   };
 
-  // Function to update profile state immediately after saving in Settings
   const handleProfileUpdate = (newProfileData) => {
       setUserProfile(prev => ({ ...prev, ...newProfileData }));
   };
 
-  // ... (Keep handleToggle, handleSaveNote, handleSaveHabit, handleDelete as they were) ...
-  // [Copy-paste your existing handler functions here or keep them if you are editing the file]
+  // ... (Keep existing handlers: handleToggle, handleSaveNote, handleSaveHabit, handleDelete) ...
+  // [Paste your existing handlers here or keep them if editing]
+  
+  // --- EXISTING HANDLERS (Briefly included for context) ---
   const handleToggle = async (habitId, date, newStatus) => {
     const updatedLogs = [...logs];
     const existingIndex = updatedLogs.findIndex(l => l.habit_id === habitId && l.log_date === date);
@@ -118,26 +142,21 @@ function App() {
   const openEditModal = (habit) => { setHabitToEdit(habit); setIsCreateOpen(true); };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background-light dark:bg-background-dark text-[#111418] dark:text-white font-display">
+    <div className="flex h-screen w-full overflow-hidden bg-background-light dark:bg-background-dark text-[#111418] dark:text-white font-display transition-colors duration-300">
       <Sidebar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
         onOpenCreate={openCreateModal}
-        userProfile={userProfile} // <--- Pass Profile Data
+        userProfile={userProfile}
+        theme={theme}             // <--- Pass Theme
+        toggleTheme={toggleTheme} // <--- Pass Toggle Function
       />
       
       <main className="flex-1 flex flex-col h-full overflow-y-auto relative scroll-smooth">
         {activeTab === 'dashboard' && <Dashboard habits={habits} logs={logs} loading={loading} onToggle={handleToggle} onEdit={openEditModal} onDelete={handleDelete} />}
         {activeTab === 'calendar' && <Calendar logs={logs} habits={habits} dayNotes={dayNotes} onSaveNote={handleSaveNote} />}
         {activeTab === 'analytics' && <Analytics habits={habits} logs={logs} />}
-        
-        {/* Pass userProfile AND the update function */}
-        {activeTab === 'settings' && (
-            <Settings 
-                userProfile={userProfile} 
-                onProfileUpdate={handleProfileUpdate} 
-            />
-        )}
+        {activeTab === 'settings' && <Settings userProfile={userProfile} onProfileUpdate={handleProfileUpdate} />}
       </main>
 
       <CreateHabitModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} onSave={handleSaveHabit} initialData={habitToEdit} />

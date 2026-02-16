@@ -1,8 +1,6 @@
 import React from 'react';
-import logo from '../assets/react.svg'; // Or your logo path
 
-const Sidebar = ({ activeTab, setActiveTab, onOpenCreate, userProfile }) => {
-  
+const Sidebar = ({ activeTab, setActiveTab, onOpenCreate, userProfile, theme, toggleTheme }) => { // Accept theme props
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
     { id: 'calendar', label: 'Calendar', icon: 'calendar_month' },
@@ -55,8 +53,27 @@ const Sidebar = ({ activeTab, setActiveTab, onOpenCreate, userProfile }) => {
         </button>
       </div>
 
-      {/* User Profile (Dynamic!) */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+      {/* Bottom Actions Container */}
+      <div className="p-4 border-t border-gray-200 dark:border-gray-800 flex flex-col gap-2">
+        
+        {/* --- DARK MODE TOGGLE --- */}
+        <button 
+            onClick={toggleTheme}
+            className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold bg-gray-50 dark:bg-[#2c3b4a] text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+        >
+            <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-[20px]">
+                    {theme === 'dark' ? 'dark_mode' : 'light_mode'}
+                </span>
+                <span>{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</span>
+            </div>
+            {/* Toggle Switch Visual */}
+            <div className={`w-8 h-4 rounded-full relative transition-colors ${theme === 'dark' ? 'bg-primary' : 'bg-gray-300'}`}>
+                <div className={`w-3 h-3 bg-white rounded-full absolute top-0.5 transition-all ${theme === 'dark' ? 'left-4.5' : 'left-0.5'}`} style={{ left: theme === 'dark' ? '18px' : '2px' }}></div>
+            </div>
+        </button>
+
+        {/* User Profile */}
         <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-[#2c3b4a] transition-colors cursor-pointer" onClick={() => setActiveTab('settings')}>
             <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden border border-gray-200 dark:border-gray-600">
                 {userProfile?.avatar_url ? (
@@ -71,7 +88,6 @@ const Sidebar = ({ activeTab, setActiveTab, onOpenCreate, userProfile }) => {
                 <p className="text-sm font-bold text-gray-900 dark:text-white truncate">
                     {userProfile?.first_name} {userProfile?.last_name}
                 </p>
-                {/* Removed "Pro Member" text as requested */}
             </div>
         </div>
       </div>
