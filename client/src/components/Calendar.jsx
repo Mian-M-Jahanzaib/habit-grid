@@ -38,10 +38,8 @@ const Calendar = ({ logs, habits, dayNotes, onSaveNote }) => {
       const currentSelected = new Date(selectedDate);
       currentSelected.setHours(0, 0, 0, 0);
 
-      // Must exist by this date
       if (currentSelected < habitStartDate) return false;
 
-      // Must not be expired
       if (habit.end_date) {
           const habitEndDate = new Date(habit.end_date);
           habitEndDate.setHours(0, 0, 0, 0);
@@ -105,14 +103,14 @@ const Calendar = ({ logs, habits, dayNotes, onSaveNote }) => {
   return (
     <div className="flex flex-col h-full overflow-hidden bg-background-light dark:bg-background-dark">
       {/* Header */}
-      <header className="flex-shrink-0 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111418] px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 z-10">
-        <div className="flex items-center gap-4">
+      <header className="flex-shrink-0 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111418] px-4 md:px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 z-10">
+        <div className="flex items-center justify-between w-full md:w-auto gap-4">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Calendar</h2>
           <div className="flex items-center bg-gray-100 dark:bg-[#1f2937] rounded-lg p-1">
             <button onClick={() => changeMonth(-1)} className="p-1 hover:bg-white dark:hover:bg-gray-700 rounded-md text-gray-500">
               <span className="material-symbols-outlined text-lg">chevron_left</span>
             </button>
-            <span className="px-3 text-sm font-medium text-gray-900 dark:text-white min-w-[120px] text-center">{monthName}</span>
+            <span className="px-2 md:px-3 text-sm font-medium text-gray-900 dark:text-white min-w-[100px] md:min-w-[120px] text-center">{monthName}</span>
             <button onClick={() => changeMonth(1)} className="p-1 hover:bg-white dark:hover:bg-gray-700 rounded-md text-gray-500">
               <span className="material-symbols-outlined text-lg">chevron_right</span>
             </button>
@@ -120,19 +118,22 @@ const Calendar = ({ logs, habits, dayNotes, onSaveNote }) => {
         </div>
         <button 
             onClick={() => { setSelectedDate(new Date()); setCurrentDate(new Date()); }}
-            className="px-3 py-2 text-sm font-medium text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors"
+            className="px-3 py-2 text-sm font-medium text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors self-start md:self-auto"
         >
             Jump to Today
         </button>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
+      {/* --- RESPONSIVE LAYOUT CONTAINER --- */}
+      {/* flex-col on mobile (stacking), lg:flex-row on desktop (side-by-side) */}
+      <div className="flex flex-col lg:flex-row flex-1 overflow-y-auto lg:overflow-hidden">
+        
         {/* LEFT: Calendar Grid */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-none lg:flex-1 lg:overflow-y-auto p-4 md:p-6">
           <div className="bg-white dark:bg-card-dark rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 h-full flex flex-col">
             <div className="grid grid-cols-7 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-[#1a222b]">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <div key={day} className="py-3 text-center text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{day}</div>
+                <div key={day} className="py-2 md:py-3 text-center text-[10px] md:text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{day}</div>
               ))}
             </div>
             
@@ -144,34 +145,28 @@ const Calendar = ({ logs, habits, dayNotes, onSaveNote }) => {
                 const cellDateStr = cellDate.toLocaleDateString('en-CA');
                 const isSelected = selectedDateStr === cellDateStr;
                 
-                // Normalizing cellDate for comparison
                 const cDate = new Date(cellDate);
                 cDate.setHours(0,0,0,0);
                 const todayMidnight = new Date();
                 todayMidnight.setHours(0,0,0,0);
 
-                // 1. Find ALL Active Habits for this specific day
                 const activeHabitsForDay = habits.filter(h => {
                     const hStart = new Date(h.created_at);
                     hStart.setHours(0,0,0,0);
-                    
-                    if (cDate < hStart) return false; // Too early
-                    
+                    if (cDate < hStart) return false; 
                     if (h.end_date) {
                         const hEnd = new Date(h.end_date);
                         hEnd.setHours(0,0,0,0);
-                        if (cDate > hEnd) return false; // Too late (expired)
+                        if (cDate > hEnd) return false; 
                     }
                     return true;
                 });
 
-                // 2. Map them to status dots
                 const dots = activeHabitsForDay.map(habit => {
                     const isCompleted = logs.some(l => l.habit_id === habit.id && l.log_date === cellDateStr && l.status === 'completed');
-                    
-                    if (isCompleted) return 'bg-green-500'; // Done
-                    if (cDate < todayMidnight) return 'bg-red-500'; // Missed (Past)
-                    return 'bg-gray-300 dark:bg-gray-600'; // Upcoming (Future/Today)
+                    if (isCompleted) return 'bg-green-500'; 
+                    if (cDate < todayMidnight) return 'bg-red-500'; 
+                    return 'bg-gray-300 dark:bg-gray-600'; 
                 });
                 
                 const hasNote = dayNotes.some(n => n.note_date === cellDateStr && n.content.trim().length > 0);
@@ -180,21 +175,21 @@ const Calendar = ({ logs, habits, dayNotes, onSaveNote }) => {
                   <div 
                     key={index} 
                     onClick={() => setSelectedDate(cellDate)}
-                    className={`bg-white dark:bg-[#111418] p-2 min-h-[100px] cursor-pointer transition-all relative hover:bg-gray-50 dark:hover:bg-[#1a222b]
+                    // Reduced min-height on mobile (min-h-[70px]) so it fits better
+                    className={`bg-white dark:bg-[#111418] p-1 md:p-2 min-h-[70px] md:min-h-[100px] cursor-pointer transition-all relative hover:bg-gray-50 dark:hover:bg-[#1a222b]
                         ${isSelected ? 'ring-2 ring-inset ring-primary z-10' : ''}
                     `}
                   >
                     <div className="flex justify-between items-start">
-                        <span className={`text-sm font-medium ${isSelected ? 'text-primary font-bold' : 'text-gray-700 dark:text-gray-300'}`}>
+                        <span className={`text-xs md:text-sm font-medium ${isSelected ? 'text-primary font-bold' : 'text-gray-700 dark:text-gray-300'}`}>
                         {day}
                         </span>
                         {hasNote && <span className="material-symbols-outlined text-[10px] text-gray-400">description</span>}
                     </div>
                     
-                    {/* Render Dots for EVERY active habit */}
-                    <div className="flex flex-wrap gap-1 mt-2 content-start">
+                    <div className="flex flex-wrap gap-1 mt-1 md:mt-2 content-start">
                         {dots.map((colorClass, i) => (
-                            <div key={i} className={`h-2 w-2 rounded-full ${colorClass}`}></div>
+                            <div key={i} className={`h-1.5 w-1.5 md:h-2 md:w-2 rounded-full ${colorClass}`}></div>
                         ))}
                     </div>
                   </div>
@@ -204,33 +199,33 @@ const Calendar = ({ logs, habits, dayNotes, onSaveNote }) => {
           </div>
         </div>
 
-        {/* RIGHT: Sidebar */}
-        <div className="w-96 border-l border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111418] flex flex-col shadow-xl z-20">
+        {/* RIGHT: Sidebar (Stacks on bottom for Mobile, Right side for Desktop) */}
+        <div className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111418] flex flex-col shadow-xl z-20 flex-none">
              
-             <div className="p-6 border-b border-gray-200 dark:border-gray-800">
+             <div className="p-4 md:p-6 border-b border-gray-200 dark:border-gray-800">
                 <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
                         {selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </h3>
                     <span className="material-symbols-outlined text-gray-300">event</span>
                 </div>
                 <div className="flex gap-4">
                     <div>
-                        <p className="text-xs text-gray-500 uppercase font-bold">Status</p>
+                        <p className="text-[10px] md:text-xs text-gray-500 uppercase font-bold">Status</p>
                         <p className={`text-sm font-bold ${statusColor}`}>{dayStatus}</p>
                     </div>
                     {totalCount > 0 && (
                         <div>
-                            <p className="text-xs text-gray-500 uppercase font-bold">Done</p>
+                            <p className="text-[10px] md:text-xs text-gray-500 uppercase font-bold">Done</p>
                             <p className="text-sm font-bold text-gray-900 dark:text-white">{completedCount}/{totalCount} Tasks</p>
                         </div>
                     )}
                 </div>
              </div>
 
-             <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+             <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 min-h-[250px] lg:min-h-0">
                 {totalCount === 0 ? (
-                    <div className="h-full flex flex-col items-center justify-center text-gray-400 text-center px-6">
+                    <div className="h-full flex flex-col items-center justify-center text-gray-400 text-center px-6 py-10">
                         <span className="material-symbols-outlined text-4xl mb-2 text-gray-300">history_toggle_off</span>
                         <p className="text-sm">No active habits on this date.</p>
                         <p className="text-xs mt-1 text-gray-500">
@@ -267,7 +262,7 @@ const Calendar = ({ logs, habits, dayNotes, onSaveNote }) => {
              <div className="p-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-[#161b22]">
                 <p className="text-xs font-bold text-gray-500 mb-2 uppercase">Daily Notes</p>
                 <textarea 
-                    className="w-full h-24 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#111418] p-3 text-sm focus:ring-primary focus:border-primary dark:text-white resize-none"
+                    className="w-full h-20 md:h-24 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#111418] p-3 text-sm focus:ring-primary focus:border-primary dark:text-white resize-none"
                     placeholder="How was your day?"
                     value={noteText}
                     onChange={(e) => setNoteText(e.target.value)}
