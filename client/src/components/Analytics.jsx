@@ -2,11 +2,38 @@ import React from 'react';
 import BarChart from './BarChart';
 
 const Analytics = ({ habits, logs }) => {
-  // --- 1. Stats Logic ---
-  const totalLogs = logs.length;
+  // --- 1. Stats Logic (FIXED: True Missed Tasks) ---
+  const todayStats = new Date();
+  todayStats.setHours(0, 0, 0, 0);
+
+  let totalPossibleTasks = 0;
+
+  // Calculate exactly how many tasks you SHOULD have done by today
+  habits.forEach(habit => {
+      const startDate = new Date(habit.created_at);
+      startDate.setHours(0, 0, 0, 0);
+      
+      let endDate = new Date(todayStats); // Count up to today
+      
+      // If the habit has an end date in the past, stop counting there
+      if (habit.end_date) {
+          const hEnd = new Date(habit.end_date);
+          hEnd.setHours(0, 0, 0, 0);
+          if (hEnd < endDate) endDate = hEnd;
+      }
+
+      // If the habit is valid, calculate the days between start and end
+      if (startDate <= endDate) {
+          const diffTime = endDate.getTime() - startDate.getTime();
+          const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include today/start day
+          totalPossibleTasks += diffDays;
+      }
+  });
+
   const completedLogs = logs.filter(l => l.status === 'completed').length;
-  const missedLogs = totalLogs - completedLogs;
-  const completionRate = totalLogs > 0 ? Math.round((completedLogs / totalLogs) * 100) : 0;
+  // If you didn't complete it, you missed it! (Math.max prevents negative numbers just in case)
+  const missedLogs = Math.max(0, totalPossibleTasks - completedLogs); 
+  const completionRate = totalPossibleTasks > 0 ? Math.round((completedLogs / totalPossibleTasks) * 100) : 0;
 
   // --- 2. Streak Logic ---
   const calculateBestStreak = () => {
@@ -101,7 +128,6 @@ const Analytics = ({ habits, logs }) => {
   const annualData = generateAnnualGrid();
 
   // --- 4. Prepare Headers (Weeks) ---
-  // Extract the Sunday (start date) of each of the 53 weeks
   const weeks = [];
   for (let i = 0; i < annualData.length; i += 7) {
       weeks.push(annualData[i]); // This is the Sunday of that week
@@ -159,7 +185,7 @@ const Analytics = ({ habits, logs }) => {
             </div>
         </div>
 
-        {/* Ring Chart (Red Background, Blue Foreground) */}
+        {/* Ring Chart (Success vs True Missed) */}
         <div className="bg-white dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col items-center">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6 w-full text-left">Success Distribution</h3>
             
@@ -202,20 +228,16 @@ const Analytics = ({ habits, logs }) => {
         </div>
       </div>
 
-      {/* Annual Consistency Map (Fixed Alignment) */}
+      {/* Annual Consistency Map */}
       <div className="bg-white dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
         <div className="mb-6">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white">Annual Consistency Map</h3>
             <p className="text-xs text-gray-500">Visualizing daily effort over the last 12 months.</p>
         </div>
         
-        {/* The Grid Container */}
         <div className="w-full overflow-x-auto pb-4 scrollbar-hide">
-            {/* Fix width to match content so it doesn't shrink */}
             <div className="min-w-max"> 
                 
-                {/* 1. Header Row (Weeks) - USES SAME GRID STRUCTURE AS DOTS */}
-                {/* grid-flow-col ensures it lays out sideways. w-2.5 matches dots. gap-1 matches dots. */}
                 <div className="grid grid-flow-col gap-1 mb-2">
                     {weeks.map((sunday, i) => {
                         if (!sunday || sunday.intensity === -1) return null;
@@ -223,7 +245,6 @@ const Analytics = ({ habits, logs }) => {
                         const currentMonthNum = sunday.dateObj.getMonth();
                         const currentMonthName = sunday.dateObj.toLocaleString('default', { month: 'short' });
                         
-                        // Show label if it's the first column OR if month changed from previous week
                         let showLabel = false;
                         if (i === 0) {
                             showLabel = true;
@@ -237,8 +258,6 @@ const Analytics = ({ habits, logs }) => {
                         return (
                             <div key={i} className="w-2.5 relative h-4">
                                 {showLabel && (
-                                    // Absolute positioning inside the 10px cell allows text to spill over
-                                    // without pushing the next cell.
                                     <span className="absolute left-0 top-0 text-[10px] text-gray-400 font-medium whitespace-nowrap">
                                         {currentMonthName}
                                     </span>
@@ -248,8 +267,6 @@ const Analytics = ({ habits, logs }) => {
                     })}
                 </div>
 
-                {/* 2. The Dots Grid */}
-                {/* 7 rows. grid-flow-col fills top-to-bottom, then left-to-right */}
                 <div className="grid grid-rows-7 grid-flow-col gap-1">
                     {annualData.map((day, i) => (
                         <div 
@@ -269,7 +286,6 @@ const Analytics = ({ habits, logs }) => {
             </div>
         </div>
         
-        {/* Footer Legend */}
         <div className="flex items-center justify-end gap-2 mt-4 text-xs text-gray-500">
             <span>Less</span>
             <div className="w-3 h-3 rounded-[2px] bg-gray-100 dark:bg-[#1f2937]"></div>
