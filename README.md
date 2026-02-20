@@ -39,36 +39,43 @@ Make sure you have [Node.js](https://nodejs.org/) installed.
 ### 1. Clone the Repository
 
 ```bash
-git clone [https://github.com/mianjahanzaib/habit-grid.git](https://github.com/mianjahanzaib/habit-grid.git)
+git clone https://github.com/mianjahanzaib/habit-grid.git
 cd habit-grid
-2. Set Up the Backend (Server)
-Open a terminal window and navigate to the server folder:
+```
 
-Bash
+### 2. Set Up the Backend (Server)
+Open a terminal window and navigate to the `server` folder:
+
+```bash
 cd server
 npm install
 node index.js
-The server runs on http://localhost:5000 and automatically generates a local SQLite database (database.sqlite).
+```
 
-3. Set Up the Frontend (Client)
-Open a new, separate terminal window and navigate to the client folder:
+*The server runs on `http://localhost:5000` and automatically generates a local SQLite database (`database.sqlite`).*
 
-Bash
+### 3. Set Up the Frontend (Client)
+Open a **new, separate terminal window** and navigate to the `client` folder:
+
+```bash
 cd client
 npm install
 npm run dev
-Vite will start the frontend. Open the local link (usually http://localhost:5173) in your browser.
+```
 
-💡 Usage Guide
-Profile Setup: Head to the Settings page to add your name, bio, and upload a profile picture. Toggle Dark Mode if you prefer.
+*Vite will start the frontend. Open the local link (usually `http://localhost:5173`) in your browser.*
 
-Add Tasks: Go to the Dashboard and click "Add New Task". Set a title, color, icon, and timeframe.
+---
 
-Log Habits: Check off tasks daily to build your streak.
+## 💡 Usage Guide
 
-Review Analytics: Check the Analytics tab to see your success distribution and populate your consistency heatmap.
+1. **Profile Setup:** Head to the Settings page to add your name, bio, and upload a profile picture. Toggle Dark Mode if you prefer.
+2. **Add Tasks:** Go to the Dashboard and click "Add New Task". Set a title, color, icon, and timeframe.
+3. **Log Habits:** Check off tasks daily to build your streak.
+4. **Review Analytics:** Check the Analytics tab to see your success distribution and populate your consistency heatmap.
+5. **Backup:** Periodically visit Settings -> Data Management to export a backup of your progress.
 
-Backup: Periodically visit Settings -> Data Management to export a backup of your progress.
+---
 
-👨‍💻 Author
-Built by Mian Muhammad Jahanzaib
+## 👨‍💻 Author
+Built by **Mian Muhammad Jahanzaib**
