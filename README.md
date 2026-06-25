@@ -1,81 +1,69 @@
-# 🚀 HabitGrid
+# HabitGrid
 
-HabitGrid is a full-stack, responsive habit-tracking application designed to help users build and maintain consistent routines. It features a beautiful, dark-mode-ready UI, deep analytics with GitHub-style heatmaps, and complete local data management.
+A full-stack habit tracking application with a local-first architecture. Built for users who want complete ownership of their data — no accounts, no cloud, no subscriptions.
 
-## 🎯 The Productivity Catalyst for Developers
-
-**Built for those who work at their desks.** Because HabitGrid is a local-first web application, it naturally builds productivity into your daily routine. For coders, designers, and computer professionals, the hardest part of the day is often simply *starting*. 
-
-By tying your daily habit logging to your PC or laptop, HabitGrid gives you a mandatory reason to boot up your machine every day. Once the laptop is open and your habits are logged, you are already in your workspace—drastically reducing the friction to open your editor, focus, and start coding.
-
-## ✨ Features
-
-* **Interactive Dashboard:** Easily create, edit, delete, and check off daily habits.
-* **Calendar & Daily Notes:** View your habit history on a calendar and jot down daily reflections.
-* **Deep Analytics:** Track your current streak, best streak, and completion rates. Features a GitHub-style annual consistency heatmap to visualize your effort over time.
-* **Personalized Settings:** Customize your profile with an avatar upload, update your bio, and toggle between **Light and Dark Mode**.
-* **Complete Data Ownership:** Export your entire database as a JSON backup and import it anytime. Includes a "Danger Zone" for a complete factory reset.
-* **Fully Responsive:** A seamless experience on both desktop and mobile, featuring a clean hamburger menu and sliding sidebar.
-
-## 🛠️ Tech Stack
-
-**Frontend:**
-* React.js
-* Tailwind CSS
-* Vite
-
-**Backend:**
-* Node.js
-* Express.js
-* SQLite3 (Local database)
+Live demo not available (local-first app) · [GitHub](https://github.com/Mian-M-Jahanzaib/habit-grid)
 
 ---
 
-## 💻 How to Run This Project Locally
+## Features
 
-### Prerequisites
-Make sure you have [Node.js](https://nodejs.org/) installed.
+- **Dashboard** — create, edit, delete, and check off daily habits
+- **Calendar & Daily Notes** — browse habit history by date and add daily reflections
+- **Analytics** — streak tracking, completion rates, and a GitHub-style annual heatmap for long-term consistency visualization
+- **Profile & Settings** — avatar upload, bio, light/dark mode toggle
+- **Data Portability** — export full database as JSON backup, import anytime, full factory reset option
+- **Fully Responsive** — clean experience on desktop and mobile with sliding sidebar
 
-### 1. Clone the Repository
+---
 
+## Tech Stack
+
+**Frontend:** React.js · Tailwind CSS · Vite  
+**Backend:** Node.js · Express.js  
+**Database:** SQLite3 (local)
+
+---
+
+## Running Locally
+
+**Prerequisites:** [Node.js](https://nodejs.org/) installed
+
+**1. Clone the repo**
 ```bash
-git clone https://github.com/mianjahanzaib/habit-grid.git
+git clone https://github.com/Mian-M-Jahanzaib/habit-grid.git
 cd habit-grid
 ```
 
-### 2. Set Up the Backend (Server)
-Open a terminal window and navigate to the `server` folder:
-
+**2. Start the backend**
 ```bash
 cd server
 npm install
 node index.js
 ```
+Server runs on `http://localhost:5000` and auto-generates a local SQLite database.
 
-*The server runs on `http://localhost:5000` and automatically generates a local SQLite database (`database.sqlite`).*
-
-### 3. Set Up the Frontend (Client)
-Open a **new, separate terminal window** and navigate to the `client` folder:
-
+**3. Start the frontend**
 ```bash
 cd client
 npm install
 npm run dev
 ```
-
-*Vite will start the frontend. Open the local link (usually `http://localhost:5173`) in your browser.*
-
----
-
-## 💡 Usage Guide
-
-1. **Profile Setup:** Head to the Settings page to add your name, bio, and upload a profile picture. Toggle Dark Mode if you prefer.
-2. **Add Tasks:** Go to the Dashboard and click "Add New Task". Set a title, color, icon, and timeframe.
-3. **Log Habits:** Check off tasks daily to build your streak.
-4. **Review Analytics:** Check the Analytics tab to see your success distribution and populate your consistency heatmap.
-5. **Backup:** Periodically visit Settings -> Data Management to export a backup of your progress.
+Open `http://localhost:5173` in your browser.
 
 ---
 
-## 👨‍💻 Author
-Built by **Mian Muhammad Jahanzaib**
+## Usage
+
+1. **Settings** — add your name, bio, and profile picture. Toggle dark mode.
+2. **Dashboard** — click "Add New Task", set title, color, icon, and timeframe.
+3. **Daily logging** — check off tasks each day to build streaks.
+4. **Analytics** — view completion rates and your consistency heatmap.
+5. **Backup** — export a JSON backup anytime from Settings → Data Management.
+
+---
+
+## Author
+
+**Mian Muhammad Jahanzaib** — Full-Stack Developer  
+[Portfolio](https://mian-m-jahanzaib.github.io) · [LinkedIn](https://www.linkedin.com/in/mian-m-jahanzaib) · [Email](mailto:jahanzaibm120@gmail.com)
